@@ -82,37 +82,72 @@ echo ""
 echo "▶ Проверяю ключ доступа..."
 
 VALIDATE_RESP=$(curl -s \
-  "$SUPABASE_URL/rest/v1/licenses?key=eq.$KEY&is_active=eq.true&select=id,expires_at" \
+  "$SUPABASE_URL/rest/v1/licenses?key=eq.$KEY&select=id,is_active,expires_at,clients(name,email)" \
   -H "apikey: $SUPABASE_ANON_KEY" \
   -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
   -H "Accept: application/json")
 
-KEY_STATUS=$(echo "$VALIDATE_RESP" | python3 -c "
+LICENSE_ID=$(echo "$VALIDATE_RESP" | python3 -c "
 import json, sys
 from datetime import datetime, timezone
 try:
     data = json.load(sys.stdin)
     if not isinstance(data, list) or len(data) == 0:
-        print('invalid')
+        print('INVALID')
         sys.exit(0)
     rec = data[0]
+    if not rec.get('is_active', False):
+        print('INACTIVE')
+        sys.exit(0)
     exp = rec.get('expires_at')
     if exp:
         exp_dt = datetime.fromisoformat(exp.replace('Z', '+00:00'))
         if exp_dt < datetime.now(timezone.utc):
-            print('expired')
+            print('EXPIRED')
             sys.exit(0)
-    print('valid')
+    print(rec['id'])
 except:
-    print('error')
-" 2>/dev/null || echo "error")
+    print('ERROR')
+" 2>/dev/null || echo "ERROR")
 
-case "$KEY_STATUS" in
-  valid)   echo "  ✅ Ключ действителен" ;;
-  invalid) echo "  ❌ Ключ не найден. Проверь правильность ввода."; exit 1 ;;
-  expired) echo "  ❌ Срок действия ключа истёк."; exit 1 ;;
-  *)       echo "  ❌ Ошибка проверки ключа. Попробуй позже."; exit 1 ;;
+case "$LICENSE_ID" in
+  INVALID)  echo "  ❌ Ключ не найден. Проверь правильность ввода."; exit 1 ;;
+  INACTIVE) echo "  ❌ Лицензия деактивирована."; exit 1 ;;
+  EXPIRED)  echo "  ❌ Срок действия ключа истёк."; exit 1 ;;
+  ERROR)    echo "  ❌ Ошибка проверки ключа. Попробуй позже."; exit 1 ;;
 esac
+
+# Данные клиента
+CLIENT_NAME=$(echo "$VALIDATE_RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['clients']['name'] if d else '')" 2>/dev/null || echo "—")
+CLIENT_EMAIL=$(echo "$VALIDATE_RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0]['clients']['email'] if d else '')" 2>/dev/null || echo "—")
+IS_ACTIVE=$(echo "$VALIDATE_RESP" | python3 -c "import json,sys; d=json.load(sys.stdin); print('активна' if d[0].get('is_active') else 'неактивна')" 2>/dev/null || echo "—")
+
+# Последняя загрузка
+LAST_DL=$(curl -s \
+  "$SUPABASE_URL/rest/v1/downloads?license_id=eq.$LICENSE_ID&select=downloaded_at&order=downloaded_at.desc&limit=1" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+  -H "Accept: application/json" | python3 -c "
+import json, sys
+from datetime import datetime, timezone
+try:
+    data = json.load(sys.stdin)
+    if not data:
+        print('нет')
+        sys.exit(0)
+    ts = data[0]['downloaded_at']
+    dt = datetime.fromisoformat(ts.replace('Z','+00:00')).astimezone()
+    print(dt.strftime('%d.%m.%Y %H:%M'))
+except:
+    print('нет')
+" 2>/dev/null || echo "нет")
+
+echo "  ✅ Ключ действителен"
+echo ""
+echo "  Клиент       : $CLIENT_NAME"
+echo "  Email        : $CLIENT_EMAIL"
+echo "  Лицензия     : $IS_ACTIVE"
+echo "  Посл. загрузка: $LAST_DL"
 
 echo ""
 
