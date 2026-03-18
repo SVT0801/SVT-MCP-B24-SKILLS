@@ -1,0 +1,93 @@
+{
+  "b24-config": {
+    "name": "b24-config",
+    "version": "1.0.0",
+    "zip": "b24-config@1.0.0.zip",
+    "url": "https://izfirrsivyfkwjefztlx.supabase.co/storage/v1/object/public/skills/b24-config@1.0.0.zip",
+    "published_at": "2026-03-18T06:24:45Z"
+  },
+  "b24-config-calls": {
+    "name": "b24-config-calls",
+    "version": "1.0.0",
+    "zip": "b24-config-calls@1.0.0.zip",
+    "url": "https://izfirrsivyfkwjefztlx.supabase.co/storage/v1/object/public/skills/b24-config-calls@1.0.0.zip",
+    "published_at": "2026-03-18T06:24:47Z"
+  },
+  "b24-config-crm-companies": {
+    "name": "b24-config-crm-companies",
+    "version": "1.0.0",
+    "zip": "b24-config-crm-companies@1.0.0.zip",
+    "url": "https://izfirrsivyfkwjefztlx.supabase.co/storage/v1/object/public/skills/b24-config-crm-companies@1.0.0.zip",
+    "published_at": "2026-03-18T06:24:51Z"
+  },
+  "b24-config-crm-contacts": {
+    "name": "b24-config-crm-contacts",
+    "version": "1.0.0",
+    "zip": "b24-config-crm-contacts@1.0.0.zip",
+    "url": "https://izfirrsivyfkwjefztlx.supabase.co/storage/v1/object/public/skills/b24-config-crm-contacts@1.0.0.zip",
+    "published_at": "2026-03-18T06:24:52Z"
+  },
+  "b24-config-crm-deals": {
+    "name": "b24-config-crm-deals",
+    "version": "1.0.0",
+    "zip": "b24-config-crm-deals@1.0.0.zip",
+    "url": "https://izfirrsivyfkwjefztlx.supabase.co/storage/v1/object/public/skills/b24-config-crm-deals@1.0.0.zip",
+    "published_at": "2026-03-18T06:24:55Z"
+  },
+  "b24-config-crm-invoices": {
+    "name": "b24-config-crm-invoices",
+    "version": "1.0.0",
+    "zip": "b24-config-crm-invoices@1.0.0.zip",
+    "url": "https://izfirrsivyfkwjefztlx.supabase.co/storage/v1/object/public/skills/b24-config-crm-invoices@1.0.0.zip",
+    "published_at": "2026-03-18T06:24:57Z"
+  },
+  "b24-config-crm-leads": {
+    "name": "b24-config-crm-leads",
+    "version": "1.0.0",
+    "zip": "b24-config-crm-leads@1.0.0.zip",
+    "url": "https://izfirrsivyfkwjefztlx.supabase.co/storage/v1/object/public/skills/b24-config-crm-leads@1.0.0.zip",
+    "published_at": "2026-03-18T06:24:59Z"
+  },
+  "b24-config-crm-quotes": {
+    "name": "b24-config-crm-quotes",
+    "version": "1.0.0",
+    "zip": "b24-config-crm-quotes@1.0.0.zip",
+    "url": "https://izfirrsivyfkwjefztlx.supabase.co/storage/v1/object/public/skills/b24-config-crm-quotes@1.0.0.zip",
+    "published_at": "2026-03-18T06:25:01Z"
+  },
+  "b24-config-projects": {
+    "name": "b24-config-projects",
+    "version": "1.0.0",
+    "zip": "b24-config-projects@1.0.0.zip",
+    "url": "https://izfirrsivyfkwjefztlx.supabase.co/storage/v1/object/public/skills/b24-config-projects@1.0.0.zip",
+    "published_at": "2026-03-18T06:25:03Z"
+  },
+  "b24-config-smart": {
+    "name": "b24-config-smart",
+    "version": "1.0.0",
+    "zip": "b24-config-smart@1.0.0.zip",
+    "url": "https://izfirrsivyfkwjefztlx.supabase.co/storage/v1/object/public/skills/b24-config-smart@1.0.0.zip",
+    "published_at": "2026-03-18T06:25:05Z"
+  },
+  "b24-config-tasks": {
+    "name": "b24-config-tasks",
+    "version": "1.0.0",
+    "zip": "b24-config-tasks@1.0.0.zip",
+    "url": "https://izfirrsivyfkwjefztlx.supabase.co/storage/v1/object/public/skills/b24-config-tasks@1.0.0.zip",
+    "published_at": "2026-03-18T06:25:07Z"
+  },
+  "b24-setup-rules": {
+    "name": "b24-setup-rules",
+    "version": "1.0.0",
+    "zip": "b24-setup-rules@1.0.0.zip",
+    "url": "https://izfirrsivyfkwjefztlx.supabase.co/storage/v1/object/public/skills/b24-setup-rules@1.0.0.zip",
+    "published_at": "2026-03-18T06:25:09Z"
+  },
+  "b24-skill-create": {
+    "name": "b24-skill-create",
+    "version": "1.0.0",
+    "zip": "b24-skill-create@1.0.0.zip",
+    "url": "https://izfirrsivyfkwjefztlx.supabase.co/storage/v1/object/public/skills/b24-skill-create@1.0.0.zip",
+    "published_at": "2026-03-18T06:25:11Z"
+  }
+}
