@@ -5,5 +5,10 @@
 # User-specific B24 configurations (personal portal data)
 configs/
 
+# Internal project files (not for public repo)
+.vscode/
+TOOLS_REFERENCE.md
+ИНСТРУКЦИЯ ПОДКЛЮЧЕНИЯ.md
+
 # macOS
 .DS_Store
