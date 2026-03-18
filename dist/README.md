@@ -4,19 +4,21 @@
 
 ## Установка
 
-Вставь в терминал — нужен ключ доступа:
+**В терминале (macOS/Linux):**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/SVT0801/SVT-MCP-B24-SKILLS/main/dist/install.sh | bash -s -- --key=ВАШ_КЛЮЧ
+```
+
+**В чате Claude Desktop / Claude.ai:**
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/SVT0801/SVT-MCP-B24-SKILLS/main/dist/install.sh) --key=ВАШ_КЛЮЧ
 ```
 
 ## Обновление
 
-Та же команда — скачает только изменённые скилы:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/SVT0801/SVT-MCP-B24-SKILLS/main/dist/install.sh | bash -s -- --key=ВАШ_КЛЮЧ
-```
+Та же команда — скачает только изменённые скилы.
 
 ## Что входит
 
