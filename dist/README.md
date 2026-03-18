@@ -4,16 +4,8 @@
 
 ## Установка
 
-**В терминале (macOS/Linux):**
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/SVT0801/SVT-MCP-B24-SKILLS/main/dist/install.sh | bash -s -- --key=ВАШ_КЛЮЧ
-```
-
-**В чате Claude Desktop / Claude.ai:**
-
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/SVT0801/SVT-MCP-B24-SKILLS/main/dist/install.sh) --key=ВАШ_КЛЮЧ
 ```
 
 ## Обновление
