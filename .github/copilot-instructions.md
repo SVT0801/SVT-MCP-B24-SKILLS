@@ -1,1 +1,0 @@
-/Users/svt/Library/Mobile Documents/com~apple~CloudDocs/VS_code PROJECTS/2026 SVT/[080] CLAUDE CODE SKILLS/.github/copilot-instructions.md

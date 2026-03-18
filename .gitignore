@@ -7,8 +7,11 @@ configs/
 
 # Internal project files (not for public repo)
 .vscode/
+.github/
 TOOLS_REFERENCE.md
 ИНСТРУКЦИЯ ПОДКЛЮЧЕНИЯ.md
+setup-supabase-mcp.sh
+scripts/
 
 # macOS
 .DS_Store
