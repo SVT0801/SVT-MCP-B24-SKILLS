@@ -1,35 +1,27 @@
-# b24-skills — публичные скилы
+# b24-skills для Claude Code
 
-Папка для распространения скилов пользователям.
+Скилы для настройки и работы с Bitrix24 через Claude Code (VS Code).
 
-## Структура
+## Установка
 
-```
-dist/
-├── install.sh          ← пользователь запускает это
-└── skills/
-    └── b24-config/
-        └── SKILL.md    ← добавляются по мере готовности
-```
-
-## Как пользователь устанавливает
+Вставь в терминал — нужен ключ доступа:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/SVT0801/b24-skills/main/dist/install.sh | bash -s -- --key=ВАШ_КЛЮЧ
+curl -fsSL https://raw.githubusercontent.com/SVT0801/SVT-MCP-B24-SKILLS/main/dist/install.sh | bash -s -- --key=ВАШ_КЛЮЧ
 ```
 
-## Как добавить новый скил в dist/
+## Обновление
 
-1. Подготовить SKILL.md в `.claude/skills/{name}/`
-2. Скопировать в `dist/skills/{name}/SKILL.md`
-3. Добавить имя в массив `SKILLS` в `install.sh`
-4. `git add . && git commit && git push`
+Та же команда — скачает только изменённые скилы:
 
-## Статус
+```bash
+curl -fsSL https://raw.githubusercontent.com/SVT0801/SVT-MCP-B24-SKILLS/main/dist/install.sh | bash -s -- --key=ВАШ_КЛЮЧ
+```
 
-| Скил | Статус |
-|------|--------|
-| b24-config | 🚧 в разработке |
-| b24-config-calls | ⏳ не готов |
-| b24-config-crm-deals | ⏳ не готов |
-| b24-config-tasks | ⏳ не готов |
+## Что входит
+
+- **b24-config** — настройка Bitrix24: CRM, задачи, проекты, звонки
+
+## Получить ключ
+
+[→ ссылка на покупку]
