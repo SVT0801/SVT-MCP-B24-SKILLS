@@ -134,8 +134,22 @@ echo ""
 # ─────────────────────────────────────────
 # Шаг 3. Определяем куда устанавливать
 # ─────────────────────────────────────────
-TARGET_DIR="$(pwd)/.claude/skills"
-echo "▶ Папка установки: $TARGET_DIR"
+echo "▶ Выбери папку проекта VS Code для установки скилов:"
+echo ""
+echo "  Текущая папка: $(pwd)"
+echo ""
+printf "  Нажми Enter чтобы установить сюда, или введи путь: "
+read -r CUSTOM_PATH
+
+if [[ -n "$CUSTOM_PATH" ]]; then
+  TARGET_BASE="$CUSTOM_PATH"
+else
+  TARGET_BASE="$(pwd)"
+fi
+
+TARGET_DIR="$TARGET_BASE/.claude/skills"
+echo ""
+echo "  Папка установки: $TARGET_DIR"
 mkdir -p "$TARGET_DIR"
 echo ""
 
@@ -155,6 +169,7 @@ data = json.load(sys.stdin)
 for name, info in data.items():
     print(f\"{name}|{info['url']}|{info['version']}\")
 " 2>/dev/null || echo "")
+SKILLS_LIST="$SKILLS"
 
 if [[ -z "$SKILLS" ]]; then
   echo "  ⚠️  Список скилов пустой"
@@ -183,8 +198,70 @@ rm -rf "$TMP_DIR"
 echo ""
 
 # ─────────────────────────────────────────
-# Итог
+# Шаг 5. Настраиваем VS Code
 # ─────────────────────────────────────────
+echo "▶ Настраиваю VS Code..."
+
+VSCODE_DIR="$TARGET_BASE/.vscode"
+SETTINGS_FILE="$VSCODE_DIR/settings.json"
+INSTRUCTIONS_FILE="$TARGET_BASE/.github/copilot-instructions.md"
+
+mkdir -p "$VSCODE_DIR"
+mkdir -p "$TARGET_BASE/.github"
+
+# .vscode/settings.json — подключаем инструкции
+if [[ ! -f "$SETTINGS_FILE" ]]; then
+  cat > "$SETTINGS_FILE" <<'SETTINGS'
+{
+  "github.copilot.chat.codeGeneration.instructions": [
+    { "file": ".github/copilot-instructions.md" }
+  ]
+}
+SETTINGS
+  echo "  ✅ Создан .vscode/settings.json"
+else
+  # Добавляем если ещё нет
+  if ! grep -q "copilot-instructions.md" "$SETTINGS_FILE" 2>/dev/null; then
+    echo "  ⚠️  Добавь вручную в .vscode/settings.json:"
+    echo '     "github.copilot.chat.codeGeneration.instructions": [{"file": ".github/copilot-instructions.md"}]'
+  else
+    echo "  ✅ .vscode/settings.json уже настроен"
+  fi
+fi
+
+# .github/copilot-instructions.md — регистрируем скилы
+SKILLS_BLOCK=""
+while IFS='|' read -r SKILL_NAME SKILL_URL SKILL_VERSION; do
+  [[ -z "$SKILL_NAME" ]] && continue
+  SKILL_FILE="$TARGET_DIR/$SKILL_NAME/SKILL.md"
+  SKILL_DESC=$(grep -m1 '^description:' "$SKILL_FILE" 2>/dev/null | sed 's/^description: //' | tr -d '"' || echo "Bitrix24 skill")
+  SKILLS_BLOCK="${SKILLS_BLOCK}
+<skill>
+<name>${SKILL_NAME}</name>
+<description>${SKILL_DESC}</description>
+<file>${SKILL_FILE}</file>
+</skill>"
+done <<< "$SKILLS_LIST"
+
+if [[ ! -f "$INSTRUCTIONS_FILE" ]]; then
+  cat > "$INSTRUCTIONS_FILE" <<INSTRUCTIONS
+# Copilot Instructions
+
+<skills>${SKILLS_BLOCK}
+</skills>
+INSTRUCTIONS
+  echo "  ✅ Создан .github/copilot-instructions.md"
+else
+  if ! grep -q "b24-config" "$INSTRUCTIONS_FILE" 2>/dev/null; then
+    # Добавляем блок скилов в конец
+    printf "\n<skills>%s\n</skills>\n" "$SKILLS_BLOCK" >> "$INSTRUCTIONS_FILE"
+    echo "  ✅ Скилы добавлены в существующий .github/copilot-instructions.md"
+  else
+    echo "  ✅ Скилы уже зарегистрированы в copilot-instructions.md"
+  fi
+fi
+
+echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
 echo "║                      ✅ ГОТОВО                          ║"
 echo "╚══════════════════════════════════════════════════════════╝"
@@ -194,7 +271,8 @@ printf "  Установлено скилов : %s\n" "$INSTALLED"
 printf "  Папка              : %s\n" "$TARGET_DIR"
 echo ""
 echo "  Как использовать:"
-echo "  Открой VS Code → чат с Claude → напиши что нужно настроить в Bitrix24"
+echo "  Открой папку $TARGET_BASE в VS Code"
+echo "  Скилы появятся автоматически в чате с Claude"
 echo ""
 echo "  Для обновления запусти установку повторно с тем же ключом"
 echo ""
