@@ -134,7 +134,7 @@ echo ""
 # ─────────────────────────────────────────
 # Шаг 3. Цель установки — глобально
 # ─────────────────────────────────────────
-TARGET_DIR="$HOME/.claude/skills"
+TARGET_DIR="$HOME/.claude/skills/user"
 mkdir -p "$TARGET_DIR"
 echo "  Папка установки: $TARGET_DIR"
 echo ""
