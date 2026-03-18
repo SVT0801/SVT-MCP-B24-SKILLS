@@ -167,22 +167,22 @@ echo "  Доступно скилов: $SKILL_COUNT"
 echo ""
 
 # ─────────────────────────────────────────
-# Шаг 3. Цель установки — глобально
+# Шаг 3. Папка для загрузки
 # ─────────────────────────────────────────
-TARGET_DIR="$HOME/.claude/skills/user"
+DOWNLOAD_TS=$(date +%Y-%m-%d_%H-%M)
+TARGET_DIR="$HOME/Downloads/b24-skills_${DOWNLOAD_TS}"
 mkdir -p "$TARGET_DIR"
-echo "  Папка установки: $TARGET_DIR"
+echo "  Папка загрузки: $TARGET_DIR"
 echo ""
 
 # ─────────────────────────────────────────
-# Шаг 4. Скачиваем и распаковываем скилы
+# Шаг 4. Скачиваем ZIP архивы
 # ─────────────────────────────────────────
-echo "▶ Устанавливаю скилы..."
+echo "▶ Скачиваю скилы..."
 echo ""
 
 INSTALLED=0
 ERRORS=0
-TMP_DIR=$(mktemp -d)
 
 SKILLS=$(echo "$MANIFEST" | python3 -c "
 import json, sys
@@ -194,19 +194,17 @@ SKILLS_LIST="$SKILLS"
 
 if [[ -z "$SKILLS" ]]; then
   echo "  ⚠️  Список скилов пустой"
-  rm -rf "$TMP_DIR"
   exit 1
 fi
 
 while IFS='|' read -r SKILL_NAME SKILL_URL SKILL_VERSION; do
   [[ -z "$SKILL_NAME" ]] && continue
 
-  ZIP_PATH="$TMP_DIR/${SKILL_NAME}.zip"
+  ZIP_PATH="$TARGET_DIR/${SKILL_NAME}.zip"
 
   printf "  ⬇️  %-30s v%s ... " "$SKILL_NAME" "$SKILL_VERSION"
 
   if curl -fsSL "$SKILL_URL" -o "$ZIP_PATH" 2>/dev/null; then
-    unzip -q -o "$ZIP_PATH" -d "$TARGET_DIR" 2>/dev/null
     printf "✅\n"
     INSTALLED=$((INSTALLED + 1))
   else
@@ -215,116 +213,38 @@ while IFS='|' read -r SKILL_NAME SKILL_URL SKILL_VERSION; do
   fi
 done <<< "$SKILLS"
 
-rm -rf "$TMP_DIR"
 echo ""
 
 # ─────────────────────────────────────────
-# Шаг 5. Регистрируем скилы в ~/.claude/CLAUDE.md
+# Шаг 5. Создаём README в папке загрузки
 # ─────────────────────────────────────────
-echo "▶ Регистрирую скилы в Claude..."
+cat > "$TARGET_DIR/README.txt" <<README
+b24-skills — скилы для работы с Bitrix24 в Claude
+Загружено: $(date '+%d.%m.%Y %H:%M')
+Клиент: ${CLIENT_NAME} (${CLIENT_EMAIL})
 
-CLAUDE_MD="$HOME/.claude/CLAUDE.md"
-mkdir -p "$HOME/.claude"
-
-# Собираем блок <skills>
-SKILLS_XML=""
-while IFS='|' read -r SKILL_NAME SKILL_URL SKILL_VERSION; do
-  [[ -z "$SKILL_NAME" ]] && continue
-  SKILL_FILE="$TARGET_DIR/$SKILL_NAME/SKILL.md"
-  SKILL_DESC=$(grep -m1 '^description:' "$SKILL_FILE" 2>/dev/null | sed 's/^description: //' | tr -d '"' || echo "Bitrix24 skill")
-  SKILLS_XML="${SKILLS_XML}
-<skill>
-<name>${SKILL_NAME}</name>
-<description>${SKILL_DESC}</description>
-<file>${SKILL_FILE}</file>
-</skill>"
-done <<< "$SKILLS_LIST"
-
-NEW_BLOCK="<skills>${SKILLS_XML}
-</skills>"
-
-# Обновляем или создаём CLAUDE.md
-if [[ ! -f "$CLAUDE_MD" ]]; then
-  printf "%s\n" "$NEW_BLOCK" > "$CLAUDE_MD"
-  echo "  ✅ Создан ~/.claude/CLAUDE.md со скилами"
-elif grep -q "<skills>" "$CLAUDE_MD" 2>/dev/null; then
-  # Заменяем существующий блок <skills>...</skills>
-  python3 - "$CLAUDE_MD" <<PYEOF
-import sys, re
-path = sys.argv[1]
-with open(path, 'r') as f:
-    content = f.read()
-before = content.split('<skills>')[0].rstrip()
-skills_new = open('/dev/stdin').read() if False else '''${NEW_BLOCK}'''
-content_new = before + '\n\n' + skills_new + '\n' if before else skills_new + '\n'
-with open(path, 'w') as f:
-    f.write(content_new)
-PYEOF
-  echo "  ✅ Обновлён блок <skills> в ~/.claude/CLAUDE.md"
-else
-  printf "\n%s\n" "$NEW_BLOCK" >> "$CLAUDE_MD"
-  echo "  ✅ Скилы добавлены в ~/.claude/CLAUDE.md"
-fi
-
-# ─────────────────────────────────────────
-# Шаг 6. Опционально: VS Code проект
-# ─────────────────────────────────────────
-echo ""
-printf "▶ Добавить скилы в VS Code проект? [Enter = пропустить, или укажи путь]: "
-read -r VSCODE_PATH
-
-if [[ -n "$VSCODE_PATH" ]]; then
-  VSCODE_DIR="$VSCODE_PATH/.vscode"
-  SETTINGS_FILE="$VSCODE_DIR/settings.json"
-  INSTRUCTIONS_FILE="$VSCODE_PATH/.github/copilot-instructions.md"
-  mkdir -p "$VSCODE_DIR" "$VSCODE_PATH/.github"
-
-  if [[ ! -f "$SETTINGS_FILE" ]]; then
-    cat > "$SETTINGS_FILE" <<'SETTINGS'
-{
-  "github.copilot.chat.codeGeneration.instructions": [
-    { "file": ".github/copilot-instructions.md" }
-  ]
-}
-SETTINGS
-    echo "  ✅ Создан .vscode/settings.json"
-  fi
-
-  # copilot-instructions.md
-  SKILLS_BLOCK_CP=""
-  while IFS='|' read -r SKILL_NAME SKILL_URL SKILL_VERSION; do
-    [[ -z "$SKILL_NAME" ]] && continue
-    SKILL_FILE="$TARGET_DIR/$SKILL_NAME/SKILL.md"
-    SKILL_DESC=$(grep -m1 '^description:' "$SKILL_FILE" 2>/dev/null | sed 's/^description: //' | tr -d '"' || echo "Bitrix24 skill")
-    SKILLS_BLOCK_CP="${SKILLS_BLOCK_CP}
-<skill>
-<name>${SKILL_NAME}</name>
-<description>${SKILL_DESC}</description>
-<file>${SKILL_FILE}</file>
-</skill>"
-  done <<< "$SKILLS_LIST"
-
-  if [[ ! -f "$INSTRUCTIONS_FILE" ]]; then
-    printf '# Copilot Instructions\n\n<skills>%s\n</skills>\n' "$SKILLS_BLOCK_CP" > "$INSTRUCTIONS_FILE"
-    echo "  ✅ Создан .github/copilot-instructions.md"
-  else
-    printf "\n<skills>%s\n</skills>\n" "$SKILLS_BLOCK_CP" >> "$INSTRUCTIONS_FILE"
-    echo "  ✅ Скилы добавлены в copilot-instructions.md"
-  fi
-fi
-
+Как установить в Claude.ai:
+1. Открой claude.ai → нажми на аватар → Settings
+2. Раздел "Skills" (или "Profile")
+3. Загрузи каждый .zip файл из этой папки
+4. Скилы появятся в новом чате
+README
+echo "  ✅ README.txt создан"
 echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
 echo "║                      ✅ ГОТОВО                          ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
-printf "  Установлено скилов : %s\n" "$INSTALLED"
+printf "  Скачано `скилов  : %s\n" "$INSTALLED"
 [[ "$ERRORS" -gt 0 ]] && printf "  Ошибок             : %s\n" "$ERRORS"
 printf "  Папка              : %s\n" "$TARGET_DIR"
 echo ""
-echo "  Как использовать:"
-echo "  Скилы подключены глобально — доступны в любом проекте Claude"
-echo "  Перезапусти VS Code / Claude если они уже открыты"
+echo "  Дальнейшие шаги:"
+echo "  1. Открой claude.ai → нажми на аватар → Settings"
+echo "  2. Раздел \"Skills\" (или \"Profile\")"
+echo "  3. Загрузи каждый .zip файл из папки:"
+echo "     $TARGET_DIR"
+echo "  4. Открой новый чат — скилы будут доступны"
 echo ""
-echo "  Для обновления запусти установку повторно с тем же ключом"
+echo "  Для обновления запусти скрипт повторно с тем же ключом"
 echo ""
