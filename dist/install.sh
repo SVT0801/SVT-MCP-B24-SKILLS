@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================
 # install.sh — установка b24-skills в Claude Code / VS Code
-# Использование: bash install.sh --key=ВАШ_КЛЮЧ
+# Использование: bash install.sh
 # =============================================================
 
 set -euo pipefail
@@ -11,32 +11,69 @@ SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIs
 BUCKET="skills"
 
 # ─────────────────────────────────────────
-# Параметры
+# Экран приветствия
 # ─────────────────────────────────────────
-KEY=""
-for ARG in "$@"; do
-  case "$ARG" in
-    --key=*) KEY="${ARG#--key=}" ;;
-  esac
-done
+clear 2>/dev/null || true
+echo ""
+echo "╔══════════════════════════════════════════════════════════╗"
+echo "║                                                          ║"
+echo "║           b24-skills для Claude Code                    ║"
+echo "║                                                          ║"
+echo "║   Скилы для настройки и работы с Bitrix24               ║"
+echo "║   через Claude Code (VS Code)                           ║"
+echo "║                                                          ║"
+echo "╠══════════════════════════════════════════════════════════╣"
+echo "║                                                          ║"
+echo "║   Что входит:                                            ║"
+echo "║   • b24-config         — мастер настройки портала       ║"
+echo "║   • b24-config-crm-*   — CRM: сделки, лиды, контакты   ║"
+echo "║   • b24-config-tasks   — задачи и проекты               ║"
+echo "║   • b24-config-calls   — звонки и телефония             ║"
+echo "║   • b24-setup-rules    — правила работы с порталом      ║"
+echo "║   • b24-skill-create   — создание новых скилов          ║"
+echo "║                                                          ║"
+echo "╠══════════════════════════════════════════════════════════╣"
+echo "║                                                          ║"
+echo "║   Разработчик: SVT  |  @svyat_b24                       ║"
+echo "║   GitHub: github.com/SVT0801/SVT-MCP-B24-SKILLS         ║"
+echo "║                                                          ║"
+echo "╚══════════════════════════════════════════════════════════╝"
+echo ""
 
-if [[ -z "$KEY" ]]; then
-  echo ""
-  echo "❌ Нужен ключ доступа"
-  echo ""
-  echo "   Использование:"
-  echo "   bash install.sh --key=ВАШ_КЛЮЧ"
-  echo ""
-  echo "   Или через curl:"
-  echo "   curl -fsSL https://raw.githubusercontent.com/SVT0801/SVT-MCP-B24-SKILLS/main/dist/install.sh | bash -s -- --key=ВАШ_КЛЮЧ"
-  echo ""
+# ─────────────────────────────────────────
+# Меню
+# ─────────────────────────────────────────
+printf "  [1] Установить / обновить скилы\n"
+printf "  [q] Выйти\n"
+echo ""
+printf "  Выбор: "
+read -r MENU_CHOICE
+
+echo ""
+[[ "$MENU_CHOICE" == "q" || -z "$MENU_CHOICE" ]] && echo "  Выход." && exit 0
+
+if [[ "$MENU_CHOICE" != "1" ]]; then
+  echo "  Неверный выбор. Выход."
   exit 1
 fi
 
+# ─────────────────────────────────────────
+# Запрос ключа
+# ─────────────────────────────────────────
+echo "  Введи ключ доступа:"
+printf "  Ключ: "
+read -r KEY
+
 echo ""
-echo "╔════════════════════════════════════════════╗"
-echo "║   b24-skills — Установка / Обновление     ║"
-echo "╚════════════════════════════════════════════╝"
+
+if [[ -z "$KEY" ]]; then
+  echo "  ❌ Ключ не введён."
+  exit 1
+fi
+
+echo "╔══════════════════════════════════════════════════════════╗"
+echo "║              Установка скилов                           ║"
+echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 
 # ─────────────────────────────────────────
@@ -71,10 +108,10 @@ except:
 " 2>/dev/null || echo "error")
 
 case "$KEY_STATUS" in
-  valid)   echo "✅ Ключ действителен" ;;
-  invalid) echo "❌ Ключ не найден. Проверь правильность ввода."; exit 1 ;;
-  expired) echo "❌ Срок действия ключа истёк."; exit 1 ;;
-  *)       echo "❌ Ошибка проверки ключа. Попробуй позже."; exit 1 ;;
+  valid)   echo "  ✅ Ключ действителен" ;;
+  invalid) echo "  ❌ Ключ не найден. Проверь правильность ввода."; exit 1 ;;
+  expired) echo "  ❌ Срок действия ключа истёк."; exit 1 ;;
+  *)       echo "  ❌ Ошибка проверки ключа. Попробуй позже."; exit 1 ;;
 esac
 
 echo ""
@@ -86,13 +123,12 @@ echo "▶ Получаю список скилов..."
 
 MANIFEST_URL="$SUPABASE_URL/storage/v1/object/public/$BUCKET/manifest.json?t=$(date +%s)"
 MANIFEST=$(curl -fsSL "$MANIFEST_URL" 2>/dev/null) || {
-  echo "❌ Не удалось загрузить manifest.json"
-  echo "   URL: $MANIFEST_URL"
+  echo "  ❌ Не удалось загрузить список скилов"
   exit 1
 }
 
 SKILL_COUNT=$(echo "$MANIFEST" | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")
-echo "   Доступно скилов: $SKILL_COUNT"
+echo "  Доступно скилов: $SKILL_COUNT"
 echo ""
 
 # ─────────────────────────────────────────
@@ -113,7 +149,6 @@ INSTALLED=0
 ERRORS=0
 TMP_DIR=$(mktemp -d)
 
-# Получаем список скилов из манифеста
 SKILLS=$(echo "$MANIFEST" | python3 -c "
 import json, sys
 data = json.load(sys.stdin)
@@ -122,7 +157,7 @@ for name, info in data.items():
 " 2>/dev/null || echo "")
 
 if [[ -z "$SKILLS" ]]; then
-  echo "⚠️  Manifest пустой или не содержит скилов"
+  echo "  ⚠️  Список скилов пустой"
   rm -rf "$TMP_DIR"
   exit 1
 fi
@@ -150,17 +185,16 @@ echo ""
 # ─────────────────────────────────────────
 # Итог
 # ─────────────────────────────────────────
-echo "╔════════════════════════════════════════════╗"
-echo "║              ✅ ГОТОВО                     ║"
-echo "╚════════════════════════════════════════════╝"
+echo "╔══════════════════════════════════════════════════════════╗"
+echo "║                      ✅ ГОТОВО                          ║"
+echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 printf "  Установлено скилов : %s\n" "$INSTALLED"
 [[ "$ERRORS" -gt 0 ]] && printf "  Ошибок             : %s\n" "$ERRORS"
 printf "  Папка              : %s\n" "$TARGET_DIR"
 echo ""
-echo "  Как использовать в Claude Code (VS Code):"
-echo "  Открой чат → напиши что хочешь настроить в Bitrix24"
+echo "  Как использовать:"
+echo "  Открой VS Code → чат с Claude → напиши что нужно настроить в Bitrix24"
 echo ""
-echo "  Для обновления:"
-echo "  bash install.sh --key=$KEY"
+echo "  Для обновления запусти установку повторно с тем же ключом"
 echo ""
