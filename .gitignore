@@ -1,0 +1,9 @@
+# Claude Code Skills (internal, not for distribution)
+.claude/
+.mcp.json
+
+# User-specific B24 configurations (personal portal data)
+configs/
+
+# macOS
+.DS_Store
